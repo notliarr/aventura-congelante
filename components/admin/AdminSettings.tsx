@@ -66,6 +66,7 @@ export function AdminSettings({ event, onRefresh }: { event: EventConfig; onRefr
       </div>
       <Field label="Mensagem de boas-vindas">
         <textarea value={form.welcomeMessage} onChange={(event) => field("welcomeMessage", event.target.value)} required maxLength={500} rows={4} className="w-full min-w-0 rounded-xl border p-3" />
+        <small className="mt-2 block text-[#43647a]">Pressione Enter para começar uma nova linha. Não é necessário usar tags HTML.</small>
       </Field>
       <div className="min-w-0">
         <span className="mb-2 block font-bold">Imagem de capa</span>

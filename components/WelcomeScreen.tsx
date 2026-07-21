@@ -13,7 +13,7 @@ export function WelcomeScreen({ event, onStart, onPrivacy }: { event: EventConfi
         <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-[#3d9bc6]/20 bg-white/60 px-4 py-2 text-sm font-bold uppercase tracking-[.16em]"><Sparkles className="size-4"/> Fotocabine encantada</div>
         <p className="text-sm font-bold uppercase tracking-[.2em] text-[#07567f]">{event.age} anos de magia</p>
         <h1 className="display mt-2 text-4xl leading-[1.08] sm:text-6xl">Uma aventura congelante com <span className="text-[#087bb5]">{event.birthdayPersonName}</span></h1>
-        <p className="mt-5 max-w-xl text-lg leading-8 text-[#183f5d]">{event.welcomeMessage}</p>
+        <p className="mt-5 max-w-xl whitespace-pre-line text-lg leading-8 text-[#183f5d]">{event.welcomeMessage}</p>
         <div className="mt-7 flex flex-col gap-3 sm:flex-row"><Button onClick={onStart} className="w-full sm:w-auto"><Camera className="size-5"/> Começar</Button>{event.galleryEnabled && <Link href="/galeria" className="ice-button ice-secondary w-full sm:w-auto"><Images className="size-5"/> Ver galeria</Link>}</div>
         <p className="mt-5 text-sm leading-6 text-[#37576c]">Escolha uma moldura, tire sua foto e compartilhe pelo menu do seu celular.</p>
         <button onClick={onPrivacy} className="mt-4 inline-flex w-fit items-center gap-2 text-sm font-semibold underline decoration-[#168fc5]/40 underline-offset-4"><ShieldCheck className="size-4"/> Como cuidamos da sua foto</button>
