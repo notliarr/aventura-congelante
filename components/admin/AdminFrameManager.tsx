@@ -1,11 +1,14 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, EyeOff, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Frame } from "@/types";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
+
+type Confirmation = { action: "deactivate" | "delete"; frame: Frame } | null;
 
 export function AdminFrameManager({
   eventId,
@@ -18,6 +21,7 @@ export function AdminFrameManager({
 }) {
   const [busy, setBusy] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<Confirmation>(null);
 
   async function update(item: Frame, values: object, successMessage: string) {
     setPendingId(item.id);
@@ -36,12 +40,14 @@ export function AdminFrameManager({
   }
 
   async function toggle(item: Frame) {
-    if (item.isActive && !window.confirm(`Desativar a moldura “${item.name}”? Ela deixará de aparecer para os convidados.`)) return;
-    await update(item, { isActive: !item.isActive }, item.isActive ? "Moldura desativada." : "Moldura ativada.");
+    if (item.isActive) {
+      setConfirmation({ action: "deactivate", frame: item });
+      return;
+    }
+    await update(item, { isActive: true }, "Moldura ativada.");
   }
 
   async function remove(item: Frame) {
-    if (!window.confirm(`Excluir permanentemente a moldura “${item.name}”? Esta ação não pode ser desfeita.`)) return;
     setPendingId(item.id);
     const response = await fetch(`/api/admin/frames/${item.id}`, { method: "DELETE" });
     setPendingId(null);
@@ -51,6 +57,14 @@ export function AdminFrameManager({
     } else {
       toast.error((await response.json()).error || "Falha ao excluir a moldura.");
     }
+  }
+
+  async function confirmAction() {
+    if (!confirmation) return;
+    const { action, frame } = confirmation;
+    if (action === "delete") await remove(frame);
+    else await update(frame, { isActive: false }, "Moldura desativada.");
+    setConfirmation(null);
   }
 
   async function upload(event: React.FormEvent<HTMLFormElement>) {
@@ -116,7 +130,7 @@ export function AdminFrameManager({
               </button>
               <button
                 type="button"
-                onClick={() => remove(item)}
+                onClick={() => setConfirmation({ action: "delete", frame: item })}
                 disabled={pendingId === item.id}
                 className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#d98682] px-3 text-sm font-bold text-[#9f2d28] disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -141,6 +155,33 @@ export function AdminFrameManager({
           <Upload className="size-4" /> {busy ? "Enviando…" : "Enviar moldura"}
         </Button>
       </form>
+
+      <Modal
+        open={Boolean(confirmation)}
+        onClose={() => { if (!pendingId) setConfirmation(null); }}
+        title={confirmation?.action === "delete" ? "Excluir moldura" : "Desativar moldura"}
+      >
+        {confirmation && (
+          <div className="text-center sm:text-left">
+            <div className={`mx-auto grid size-16 place-items-center rounded-full sm:mx-0 ${confirmation.action === "delete" ? "bg-[#fde8e7] text-[#9f2d28]" : "bg-[#dff5ff] text-[#07567f]"}`}>
+              {confirmation.action === "delete" ? <Trash2 className="size-7" /> : <EyeOff className="size-7" />}
+            </div>
+            <h3 className="display mt-5 text-2xl">{confirmation.frame.name}</h3>
+            <p className="mt-2 leading-7 text-[#43647a]">
+              {confirmation.action === "delete"
+                ? "A moldura e seu arquivo serão excluídos permanentemente. Esta ação não pode ser desfeita."
+                : "A moldura deixará de aparecer para os convidados, mas continuará salva e poderá ser ativada novamente."}
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button variant="secondary" onClick={() => setConfirmation(null)} disabled={Boolean(pendingId)} className="w-full sm:w-auto">Cancelar</Button>
+              <Button variant={confirmation.action === "delete" ? "danger" : "primary"} onClick={confirmAction} disabled={Boolean(pendingId)} className="w-full sm:w-auto">
+                {confirmation.action === "delete" ? <Trash2 className="size-4" /> : <EyeOff className="size-4" />}
+                {pendingId ? "Aguarde…" : confirmation.action === "delete" ? "Excluir moldura" : "Desativar moldura"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
