@@ -17,7 +17,7 @@ export function AdminFrameManager({
 }: {
   eventId: string;
   frames: Frame[];
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -69,16 +69,17 @@ export function AdminFrameManager({
 
   async function upload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setBusy(true);
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     form.append("eventId", eventId);
     const response = await fetch("/api/admin/frames", { method: "POST", body: form });
     setBusy(false);
 
     if (response.ok) {
       toast.success("Moldura adicionada.");
-      event.currentTarget.reset();
-      onRefresh();
+      formElement.reset();
+      await onRefresh();
     } else {
       toast.error((await response.json()).error);
     }
