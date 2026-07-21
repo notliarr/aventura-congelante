@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, EyeOff, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, EyeOff, Pencil, Save, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ export function AdminFrameManager({
   const [busy, setBusy] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<Confirmation>(null);
+  const [editing, setEditing] = useState<Frame | null>(null);
+  const [editName, setEditName] = useState("");
 
   async function update(item: Frame, values: object, successMessage: string) {
     setPendingId(item.id);
@@ -34,9 +36,28 @@ export function AdminFrameManager({
 
     if (response.ok) {
       toast.success(successMessage);
-      onRefresh();
+      await onRefresh();
+      return true;
     }
-    else toast.error("Falha ao atualizar moldura.");
+    toast.error("Falha ao atualizar moldura.");
+    return false;
+  }
+
+  function openEditor(item: Frame) {
+    setEditName(item.name);
+    setEditing(item);
+  }
+
+  async function saveName(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editing) return;
+    const name = editName.trim();
+    if (name.length < 2) {
+      toast.error("Informe um nome com pelo menos 2 caracteres.");
+      return;
+    }
+    const saved = await update(editing, { name }, "Nome da moldura atualizado.");
+    if (saved) setEditing(null);
   }
 
   async function toggle(item: Frame) {
@@ -123,6 +144,16 @@ export function AdminFrameManager({
               </button>
               <button
                 type="button"
+                onClick={() => openEditor(item)}
+                disabled={pendingId === item.id}
+                className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border text-[#07567f] disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={`Editar nome de ${item.name}`}
+                title="Editar nome"
+              >
+                <Pencil className="size-4" />
+              </button>
+              <button
+                type="button"
                 onClick={() => toggle(item)}
                 disabled={pendingId === item.id}
                 className="min-h-10 min-w-0 flex-1 cursor-pointer rounded-full border px-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
@@ -181,6 +212,38 @@ export function AdminFrameManager({
               </Button>
             </div>
           </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={Boolean(editing)}
+        onClose={() => { if (!pendingId) setEditing(null); }}
+        title="Editar nome da moldura"
+      >
+        {editing && (
+          <form onSubmit={saveName}>
+            <div className="grid size-16 place-items-center rounded-full bg-[#dff5ff] text-[#07567f]">
+              <Pencil className="size-7" />
+            </div>
+            <label className="mt-5 block font-bold" htmlFor="edit-frame-name">Nome da moldura</label>
+            <input
+              id="edit-frame-name"
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+              minLength={2}
+              maxLength={80}
+              required
+              autoFocus
+              className="mt-2 h-12 w-full rounded-xl border bg-white px-3"
+            />
+            <p className="mt-2 text-sm text-[#43647a]">A imagem e a proporção da moldura não serão alteradas.</p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button variant="secondary" onClick={() => setEditing(null)} disabled={Boolean(pendingId)} className="w-full sm:w-auto">Cancelar</Button>
+              <Button type="submit" disabled={Boolean(pendingId) || editName.trim().length < 2} className="w-full sm:w-auto">
+                <Save className="size-4" /> {pendingId ? "Salvando…" : "Salvar nome"}
+              </Button>
+            </div>
+          </form>
         )}
       </Modal>
     </div>
