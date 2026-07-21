@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --font-body: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-display: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --ice-50: #f3fbff;
+  --ice-100: #dff5ff;
+  --ice-300: #8bd8f7;
+  --ice-500: #168fc5;
+  --ice-700: #07567f;
+  --deep: #082f55;
+  --lilac: #b9a7e8;
+  --surface: rgba(255,255,255,.78);
+  --ring: #0876ad;
+  --danger: #b42318;
+  --radius-card: 1.75rem;
+  --shadow-card: 0 24px 70px rgba(4,54,91,.16), inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; background: var(--ice-50); }
+body { margin: 0; color: var(--deep); background: radial-gradient(circle at 12% 8%, rgba(255,255,255,.95), transparent 26%), linear-gradient(145deg, #eefaff 0%, #cfefff 52%, #e9e4ff 100%); font-family: var(--font-body), system-ui, sans-serif; }
+button, a, input, select, textarea { touch-action: manipulation; }
+button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.display { font-family: var(--font-display), Georgia, serif; }
+.glass { background: var(--surface); border: 1px solid rgba(255,255,255,.8); box-shadow: var(--shadow-card); backdrop-filter: blur(18px); }
+.ice-button { min-height: 3rem; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; border-radius: 999px; padding: .75rem 1.25rem; font-weight: 750; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; cursor: pointer; }
+.ice-button:active { transform: scale(.97); }
+.ice-button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+.ice-primary { color: white; background: linear-gradient(135deg, #087bb5, #07517b); box-shadow: 0 10px 24px rgba(7,81,123,.25), inset 0 1px 0 rgba(255,255,255,.3); }
+.ice-primary:hover { box-shadow: 0 13px 30px rgba(7,81,123,.33), inset 0 1px 0 rgba(255,255,255,.3); }
+.ice-secondary { color: var(--deep); background: rgba(255,255,255,.78); border: 1px solid rgba(7,86,127,.18); }
+.ice-danger { color: white; background: #9f2d28; }
+.safe-bottom { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+.safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent); animation: shimmer 1.7s infinite; }
+@keyframes shimmer { to { transform: translateX(100%); } }
+@keyframes drift { 0% { transform: translate3d(0,-8vh,0) rotate(0); } 100% { transform: translate3d(24px,108vh,0) rotate(180deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+@media (max-width: 420px) { .glass { backdrop-filter: blur(10px); } }

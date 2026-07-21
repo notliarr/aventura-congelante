@@ -1,0 +1,11 @@
+{
+  "name": "Uma Aventura Congelante — Fotocabine",
+  "short_name": "Fotocabine",
+  "description": "Fotocabine digital de Uma Aventura Congelante",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#dff5ff",
+  "theme_color": "#dff5ff",
+  "orientation": "portrait-primary",
+  "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

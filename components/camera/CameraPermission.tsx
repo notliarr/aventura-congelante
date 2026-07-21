@@ -1,0 +1,9 @@
+"use client";
+import { ArrowLeft, Camera, CircleHelp, ExternalLink, ShieldCheck } from "lucide-react";
+import { Button } from "../ui/Button";
+
+export function CameraPermission({ consent, onConsent, onAllow, onBack, onHelp }: { consent: boolean; onConsent: (value: boolean) => void; onAllow: () => void; onBack: () => void; onHelp: () => void }) {
+  return <main id="conteudo" className="relative z-10 grid min-h-dvh place-items-center p-4 safe-top safe-bottom"><section className="glass w-full max-w-xl rounded-[2rem] p-6 sm:p-9"><button onClick={onBack} className="mb-6 grid size-11 place-items-center rounded-full bg-white/60" aria-label="Voltar"><ArrowLeft/></button><div className="mx-auto grid size-20 place-items-center rounded-full bg-[#dff5ff] text-[#07567f]"><Camera className="size-9"/></div><h1 className="display mt-5 text-center text-3xl">Vamos abrir sua câmera</h1><p className="mt-4 text-center leading-7 text-[#31536b]">O navegador pedirá permissão agora. Prefira Safari no iPhone ou Chrome no Android. Nenhuma imagem é enviada até você tocar em “Gostei, salvar”.</p>
+    <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-[#0d6794]/15 bg-white/60 p-4"><input type="checkbox" checked={consent} onChange={event => onConsent(event.target.checked)} className="mt-1 size-5 accent-[#07567f]"/><span className="text-sm leading-6"><strong>Estou de acordo.</strong> Ao salvar, autorizo o armazenamento na galeria privada e, se habilitada, a exibição na galeria pública do evento.</span></label>
+    <Button disabled={!consent} onClick={onAllow} className="mt-5 w-full"><ShieldCheck className="size-5"/> Permitir câmera</Button><button onClick={onHelp} className="mx-auto mt-5 flex min-h-11 items-center gap-2 text-sm font-bold underline underline-offset-4"><CircleHelp className="size-4"/> Precisa de ajuda? <ExternalLink className="size-3"/></button></section></main>;
+}

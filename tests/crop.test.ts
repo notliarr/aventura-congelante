@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { calculateCoverCrop, ratioDimensions } from "@/lib/canvas/crop";
+describe("recorte cover", () => { it("recorta as laterais de uma câmera paisagem para 4:5", () => { expect(calculateCoverCrop(1920,1080,1600,2000)).toEqual({ sx: 528, sy: 0, sw: 864, sh: 1080 }); }); it("recorta topo e base quando a origem é mais alta", () => { expect(calculateCoverCrop(1000,2000,1000,1000)).toEqual({ sx: 0, sy: 500, sw: 1000, sh: 1000 }); }); it("limita o maior lado", () => { expect(ratioDimensions("9:16",2160)).toEqual({ width: 1215, height: 2160 }); }); });

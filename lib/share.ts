@@ -1,0 +1,1 @@
+export function getShareStrategy(capabilities: { share?: boolean; canShareFiles?: boolean }) { return capabilities.share && capabilities.canShareFiles !== false ? "native" as const : "download" as const; }

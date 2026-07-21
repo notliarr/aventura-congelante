@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { getEventAndFrames, mapPhoto } from "@/lib/data";
+import type { Frame } from "@/types";
+export async function GET() { const client = createServiceClient(); const publicData = await getEventAndFrames(); if (!client) return NextResponse.json({ event: publicData.event, frames: publicData.frames, photos: [], configured: false }); const [{ data: photoRows }, { data: frameRows }] = await Promise.all([client.from("photos").select("*, frame:frames(name)").eq("event_id", publicData.event.id).order("created_at", { ascending: false }), client.from("frames").select("*").eq("event_id", publicData.event.id).order("display_order")]); const frames: Frame[] = (frameRows ?? []).map(row => ({ id: row.id, eventId: row.event_id, name: row.name, previewUrl: row.preview_url, storagePath: row.storage_path, aspectRatio: row.aspect_ratio, displayOrder: row.display_order, isActive: row.is_active, createdAt: row.created_at })); return NextResponse.json({ event: publicData.event, frames, photos: (photoRows ?? []).map(mapPhoto), configured: true }); }

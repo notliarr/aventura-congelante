@@ -1,0 +1,2 @@
+import { Snowflake } from "lucide-react";
+export default function OfflinePage() { return <main id="conteudo" className="grid min-h-dvh place-items-center p-6"><section className="glass max-w-lg rounded-[2rem] p-8 text-center"><Snowflake className="mx-auto mb-5 size-12"/><h1 className="display text-3xl">A magia aguarda a conexão</h1><p className="mt-4 leading-7">A câmera, o envio e as galerias precisam de internet. Se você já tirou uma foto, mantenha a página aberta para tentar novamente ou baixá-la.</p></section></main>; }
