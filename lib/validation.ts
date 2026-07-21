@@ -6,8 +6,8 @@ export const MAX_FRAME_SIZE = 8 * 1024 * 1024;
 export const photoMetadataSchema = z.object({
   eventId: z.string().uuid(),
   frameId: z.string().uuid().optional(),
-  width: z.coerce.number().int().min(320).max(2160),
-  height: z.coerce.number().int().min(320).max(2160)
+  width: z.coerce.number().int().min(320).max(3840),
+  height: z.coerce.number().int().min(320).max(3840)
 });
 
 export const settingsSchema = z.object({

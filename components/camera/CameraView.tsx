@@ -8,7 +8,7 @@ import type { Frame } from "@/types";
 import { Button } from "../ui/Button";
 import { CameraControls } from "./CameraControls";
 
-export interface CapturedPhoto { blob: Blob; url: string; width: number; height: number }
+export interface CapturedPhoto { blob: Blob; url: string; width: number; height: number; highQuality?: boolean }
 
 export function CameraView({ frame, onCaptured, onBack }: { frame: Frame | null; onCaptured: (photo: CapturedPhoto) => void; onBack: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);

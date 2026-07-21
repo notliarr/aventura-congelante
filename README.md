@@ -6,9 +6,9 @@ As artes demonstrativas são originais e não usam personagens, marcas ou imagen
 
 ## Funcionalidades
 
-- Fluxo curto de boas-vindas → moldura → consentimento → câmera → prévia.
+- Fluxos de boas-vindas → moldura → câmera ou upload da galeria → ajuste → prévia.
 - Câmeras frontal/traseira, espelhamento frontal e recorte `cover` na proporção da moldura.
-- JPEG em qualidade 0,92, maior lado limitado a 2160 px.
+- Fotos da câmera em JPEG 0,92 até 2160 px; imagens escolhidas da galeria em JPEG 0,95 até 3840 px.
 - Upload validado e com progresso, retry sem perder a imagem, download e Web Share API.
 - Galeria pública responsiva com atualização automática.
 - Slideshow em `/galeria/ao-vivo`, tela cheia, pausa, shuffle e intervalos configuráveis.
@@ -59,7 +59,7 @@ Nunca prefixe a service role com `NEXT_PUBLIC_` e nunca a inclua no Git.
 5. Confirme que RLS está ativa em `events`, `frames` e `photos`.
 6. Adicione as variáveis ao `.env.local` e reinicie o servidor.
 
-O upload público passa por `/api/photos`, que valida o arquivo e usa a service role no servidor. O cliente nunca recebe essa chave. O bucket público expõe apenas os arquivos; dados internos e fotos não aprovadas não são listados pela API pública.
+O upload público valida arquivo e metadados no servidor. Imagens escolhidas da galeria recebem uma URL temporária assinada e são enviadas diretamente ao R2, sem atravessar o limite de corpo da Vercel; nenhuma chave secreta chega ao cliente. O bucket público expõe apenas os arquivos, enquanto dados internos e fotos não aprovadas não são listados pela API pública.
 
 ## Molduras
 
@@ -101,7 +101,7 @@ Para o botão de ZIP funcionar no navegador, configure o CORS do bucket substitu
       "https://aventuracongelante.vercel.app",
       "http://localhost:3000"
     ],
-    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
@@ -110,6 +110,8 @@ Para o botão de ZIP funcionar no navegador, configure o CORS do bucket substitu
 ```
 
 Depois de cadastrar as variáveis, faça um novo deploy. Novos registros recebem `storage_path` iniciado por `r2:`; isso permite excluir cada foto no provedor correto sem afetar as fotos antigas do Supabase.
+
+Se o banco já foi criado antes do suporte a upload em alta qualidade, execute uma vez no SQL Editor do Supabase o arquivo [`supabase/migrations/20260721210000_expand_photo_dimensions.sql`](supabase/migrations/20260721210000_expand_photo_dimensions.sql). Ele amplia o limite de largura e altura para 3840 px sem alterar fotos existentes.
 
 ## Personalização da festa
 

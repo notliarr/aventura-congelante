@@ -33,8 +33,8 @@ create table if not exists public.photos (
   public_url text not null,
   created_at timestamptz not null default now(),
   status text not null default 'pending' check (status in ('pending','approved','hidden')),
-  width integer not null check (width between 320 and 2160),
-  height integer not null check (height between 320 and 2160),
+  width integer not null check (width between 320 and 3840),
+  height integer not null check (height between 320 and 3840),
   file_size bigint not null check (file_size > 0 and file_size <= 12582912),
   mime_type text not null check (mime_type in ('image/jpeg','image/webp'))
 );

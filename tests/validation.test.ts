@@ -16,4 +16,13 @@ describe("metadados da foto", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("aceita upload vertical em alta qualidade", () => {
+    const result = photoMetadataSchema.safeParse({
+      eventId: "00000000-0000-4000-8000-000000000001",
+      width: 2160,
+      height: 3840,
+    });
+    expect(result.success).toBe(true);
+  });
 });

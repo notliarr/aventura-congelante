@@ -1,4 +1,5 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const R2_PREFIX = "r2:";
 
@@ -17,6 +18,7 @@ function createClient(config: NonNullable<ReturnType<typeof getConfig>>) {
     region: "auto",
     endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey },
+    requestChecksumCalculation: "WHEN_REQUIRED",
   });
 }
 
@@ -57,6 +59,26 @@ export async function uploadPhotoToR2(key: string, file: File) {
     CacheControl: "public, max-age=31536000, immutable",
   }));
   return { storagePath: `${R2_PREFIX}${key}`, publicUrl: `${config.publicUrl}/${key}` };
+}
+
+export async function createPresignedPhotoUpload(key: string, contentType: string) {
+  const config = getConfig();
+  if (!config) throw new Error("R2 não configurado.");
+  const uploadUrl = await getSignedUrl(createClient(config), new PutObjectCommand({
+    Bucket: config.bucket,
+    Key: key,
+    ContentType: contentType,
+    CacheControl: "public, max-age=31536000, immutable",
+  }), { expiresIn: 5 * 60 });
+  return { uploadUrl, storagePath: `${R2_PREFIX}${key}`, publicUrl: `${config.publicUrl}/${key}` };
+}
+
+export async function getR2PhotoMetadata(storagePath: string) {
+  const config = getConfig();
+  if (!config) throw new Error("R2 não configurado.");
+  const key = storagePath.slice(R2_PREFIX.length);
+  const result = await createClient(config).send(new HeadObjectCommand({ Bucket: config.bucket, Key: key }));
+  return { size: result.ContentLength ?? 0, contentType: result.ContentType ?? "" };
 }
 
 export async function deletePhotoFromR2(storagePath: string) {
