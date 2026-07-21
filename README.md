@@ -73,6 +73,44 @@ Quatro SVGs transparentes demonstrativos ficam em `public/frames`. Eles funciona
 
 Uploads SVG são recusados por segurança; apenas PNG é aceito no painel.
 
+## Cloudflare R2 para fotografias
+
+O R2 é opcional e usado somente para fotografias novas. Banco, molduras e capa continuam no Supabase, e fotos antigas permanecem acessíveis. Se qualquer uma das cinco variáveis estiver ausente, o upload continua no Supabase automaticamente.
+
+1. Crie o bucket `aventura-congelante` no R2.
+2. Em **R2 → Manage R2 API Tokens**, crie um token com permissão de leitura e gravação de objetos limitada a esse bucket.
+3. No bucket, abra **Settings → Public access** e habilite o endereço público `r2.dev` para testes ou conecte um domínio próprio para produção.
+4. Cadastre na Vercel e no `.env.local`:
+
+```env
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=aventura-congelante
+R2_PUBLIC_URL=https://seu-endereco-publico.r2.dev
+```
+
+`R2_PUBLIC_URL` é o endereço público exibido nas configurações do bucket, sem barra no final. Nunca exponha `R2_SECRET_ACCESS_KEY` com o prefixo `NEXT_PUBLIC_`.
+
+Para o botão de ZIP funcionar no navegador, configure o CORS do bucket substituindo o domínio pelo endereço real da Vercel:
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "https://aventuracongelante.vercel.app",
+      "http://localhost:3000"
+    ],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+Depois de cadastrar as variáveis, faça um novo deploy. Novos registros recebem `storage_path` iniciado por `r2:`; isso permite excluir cada foto no provedor correto sem afetar as fotos antigas do Supabase.
+
 ## Personalização da festa
 
 Acesse `/admin`, entre com `ADMIN_PASSWORD` e use **Configurações** para trocar nome, idade, mensagem, capa, galeria e moderação. Os valores em `lib/config.ts` são fallback local; com Supabase, a tabela `events` é a fonte de verdade.
