@@ -28,6 +28,24 @@ export function isR2StoragePath(storagePath: string) {
   return storagePath.startsWith(R2_PREFIX);
 }
 
+export function describeR2Error(error: unknown) {
+  const value = error && typeof error === "object" ? error as { name?: string; message?: string; $metadata?: { httpStatusCode?: number } } : null;
+  const name = value?.name ?? "Erro desconhecido";
+  const status = value?.$metadata?.httpStatusCode;
+  console.error("Falha no Cloudflare R2", { name, status, message: value?.message });
+
+  if (["InvalidAccessKeyId", "SignatureDoesNotMatch", "CredentialsProviderError"].includes(name)) {
+    return "O R2 recusou as credenciais. Confira Access Key ID, Secret Access Key e Account ID na Vercel.";
+  }
+  if (["AccessDenied", "Forbidden"].includes(name) || status === 401 || status === 403) {
+    return "O token do R2 não tem acesso de leitura/gravação ao bucket aventura-congelante.";
+  }
+  if (name === "NoSuchBucket" || status === 404) {
+    return "O bucket do R2 não foi encontrado. Confira R2_BUCKET_NAME e R2_ACCOUNT_ID.";
+  }
+  return `O R2 falhou ao receber a foto (${name}). Confira as configurações do bucket.`;
+}
+
 export async function uploadPhotoToR2(key: string, file: File) {
   const config = getConfig();
   if (!config) throw new Error("R2 não configurado.");

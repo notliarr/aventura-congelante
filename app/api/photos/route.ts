@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { deletePhotoFromR2, isR2Configured, uploadPhotoToR2 } from "@/lib/storage/r2";
+import { deletePhotoFromR2, describeR2Error, isR2Configured, uploadPhotoToR2 } from "@/lib/storage/r2";
 import { createServiceClient } from "@/lib/supabase/server";
 import { photoMetadataSchema, validateImageFile } from "@/lib/validation";
 
@@ -34,8 +34,8 @@ export async function POST(request: Request) {
       const { data: publicData } = client.storage.from("event-photos").getPublicUrl(key);
       stored = { storagePath: key, publicUrl: publicData.publicUrl };
     }
-  } catch {
-    return NextResponse.json({ error: "Não foi possível enviar a foto. Tente novamente." }, { status: 502 });
+  } catch (error) {
+    return NextResponse.json({ error: isR2Configured() ? describeR2Error(error) : "Não foi possível enviar a foto. Tente novamente." }, { status: 502 });
   }
 
   const { data: photo, error: insertError } = await client.from("photos").insert({
