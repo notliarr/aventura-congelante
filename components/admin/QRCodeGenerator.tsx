@@ -1,7 +1,56 @@
 "use client";
+
 import QRCode from "qrcode";
 import { Download, Printer, QrCode } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/Button";
-export function QRCodeGenerator() { const canvas = useRef<HTMLCanvasElement>(null); const [url, setUrl] = useState(""); useEffect(() => { const target = process.env.NEXT_PUBLIC_SITE_URL || location.origin; setUrl(target); if (canvas.current) QRCode.toCanvas(canvas.current, target, { width: 640, margin: 3, color: { dark: "#082f55", light: "#ffffff" }, errorCorrectionLevel: "H" }).catch(() => toast.error("Falha ao gerar QR Code.")); }, []); function download() { const anchor = document.createElement("a"); anchor.href = canvas.current?.toDataURL("image/png") ?? ""; anchor.download = "qr-code-aventura-congelante.png"; anchor.click(); } return <section className="grid gap-6 lg:grid-cols-[.7fr_1fr]"><div className="rounded-3xl border bg-white p-5 text-center"><canvas ref={canvas} className="mx-auto h-auto w-full max-w-sm"/><p className="mt-3 font-bold">Escaneie, tire sua foto e compartilhe.</p></div><div className="rounded-3xl border bg-white p-6"><QrCode className="size-10"/><h3 className="display mt-3 text-3xl">QR Code do evento</h3><p className="mt-3 break-all rounded-xl bg-[#eef9fd] p-3 font-mono text-sm">{url}</p><div className="mt-5 flex flex-wrap gap-3"><Button onClick={download}><Download className="size-4"/> Baixar PNG</Button><Button variant="secondary" onClick={() => window.print()}><Printer className="size-4"/> Imprimir</Button></div><p className="mt-5 text-sm leading-6 text-[#43647a]">Defina <code>NEXT_PUBLIC_SITE_URL</code> com o domínio final da Vercel antes de imprimir.</p></div></section>; }
+
+export function QRCodeGenerator() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [url, setUrl] = useState("");
+
+  useEffect(() => {
+    const target = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+    setUrl(target);
+    if (canvas.current) {
+      QRCode.toCanvas(canvas.current, target, {
+        width: 640,
+        margin: 3,
+        color: { dark: "#082f55", light: "#ffffff" },
+        errorCorrectionLevel: "H",
+      }).catch(() => toast.error("Falha ao gerar QR Code."));
+    }
+  }, []);
+
+  function download() {
+    const anchor = document.createElement("a");
+    anchor.href = canvas.current?.toDataURL("image/png") ?? "";
+    anchor.download = "qr-code-aventura-congelante.png";
+    anchor.click();
+  }
+
+  return (
+    <section className="grid gap-6 lg:grid-cols-[.7fr_1fr]">
+      <div className="rounded-3xl border bg-white p-5 text-center">
+        <div className="mx-auto aspect-square w-full max-w-sm overflow-hidden bg-white">
+          <canvas ref={canvas} className="block size-full" />
+        </div>
+        <p className="mt-3 font-bold">Escaneie, tire sua foto e compartilhe.</p>
+      </div>
+
+      <div className="rounded-3xl border bg-white p-6">
+        <QrCode className="size-10" />
+        <h3 className="display mt-3 text-3xl">QR Code do evento</h3>
+        <p className="mt-3 break-all rounded-xl bg-[#eef9fd] p-3 font-mono text-sm">{url}</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Button onClick={download}><Download className="size-4" /> Baixar PNG</Button>
+          <Button variant="secondary" onClick={() => window.print()}><Printer className="size-4" /> Imprimir</Button>
+        </div>
+        <p className="mt-5 text-sm leading-6 text-[#43647a]">
+          Defina <code>NEXT_PUBLIC_SITE_URL</code> com o domínio final da Vercel antes de imprimir.
+        </p>
+      </div>
+    </section>
+  );
+}
