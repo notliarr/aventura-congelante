@@ -11,7 +11,7 @@ function loadImage(src: string) {
   });
 }
 
-export async function composePhoto(video: HTMLVideoElement, frameUrl: string, ratio: AspectRatio, mirrored: boolean) {
+export async function composePhoto(video: HTMLVideoElement, frameUrl: string | null, ratio: AspectRatio, mirrored: boolean) {
   const size = ratioDimensions(ratio);
   const canvas = document.createElement("canvas");
   canvas.width = size.width;
@@ -23,8 +23,10 @@ export async function composePhoto(video: HTMLVideoElement, frameUrl: string, ra
   if (mirrored) { context.translate(size.width, 0); context.scale(-1, 1); }
   context.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, size.width, size.height);
   context.restore();
-  const frame = await loadImage(frameUrl);
-  context.drawImage(frame, 0, 0, size.width, size.height);
+  if (frameUrl) {
+    const frame = await loadImage(frameUrl);
+    context.drawImage(frame, 0, 0, size.width, size.height);
+  }
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
   if (!blob) throw new Error("Não foi possível gerar a fotografia.");
   return { blob, url: URL.createObjectURL(blob), width: size.width, height: size.height };

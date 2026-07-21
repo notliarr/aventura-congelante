@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) return NextResponse.json({ error: "Arquivo de imagem ausente." }, { status: 400 });
   const validation = validateImageFile(file);
   if (!validation.valid) return NextResponse.json({ error: validation.reason }, { status: 400 });
-  const parsed = photoMetadataSchema.safeParse(Object.fromEntries(["eventId", "frameId", "width", "height"].map(key => [key, form.get(key)])));
+  const parsed = photoMetadataSchema.safeParse({ eventId: form.get("eventId"), frameId: form.get("frameId") || undefined, width: form.get("width"), height: form.get("height") });
   if (!parsed.success) return NextResponse.json({ error: "Os dados da foto são inválidos." }, { status: 400 });
   const { data: event } = await client.from("events").select("gallery_moderation_enabled").eq("id", parsed.data.eventId).single();
   if (!event) return NextResponse.json({ error: "Evento não encontrado." }, { status: 404 });
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const { error: uploadError } = await client.storage.from("event-photos").upload(path, file, { contentType: file.type, cacheControl: "31536000", upsert: false });
   if (uploadError) return NextResponse.json({ error: "Não foi possível enviar a foto. Tente novamente." }, { status: 502 });
   const { data: publicData } = client.storage.from("event-photos").getPublicUrl(path);
-  const { data: photo, error: insertError } = await client.from("photos").insert({ event_id: parsed.data.eventId, frame_id: parsed.data.frameId, storage_path: path, public_url: publicData.publicUrl, status: event.gallery_moderation_enabled ? "pending" : "approved", width: parsed.data.width, height: parsed.data.height, file_size: file.size, mime_type: file.type }).select("id,status").single();
+  const { data: photo, error: insertError } = await client.from("photos").insert({ event_id: parsed.data.eventId, frame_id: parsed.data.frameId ?? null, storage_path: path, public_url: publicData.publicUrl, status: event.gallery_moderation_enabled ? "pending" : "approved", width: parsed.data.width, height: parsed.data.height, file_size: file.size, mime_type: file.type }).select("id,status").single();
   if (insertError) { await client.storage.from("event-photos").remove([path]); return NextResponse.json({ error: "Não foi possível registrar a foto." }, { status: 502 }); }
   return NextResponse.json(photo, { status: 201 });
 }
