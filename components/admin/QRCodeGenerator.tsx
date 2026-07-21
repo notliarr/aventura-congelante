@@ -47,9 +47,6 @@ export function QRCodeGenerator() {
           <Button onClick={download}><Download className="size-4" /> Baixar PNG</Button>
           <Button variant="secondary" onClick={() => window.print()}><Printer className="size-4" /> Imprimir</Button>
         </div>
-        <p className="mt-5 text-sm leading-6 text-[#43647a]">
-          Defina <code>NEXT_PUBLIC_SITE_URL</code> com o domínio final da Vercel antes de imprimir.
-        </p>
       </div>
     </section>
   );
