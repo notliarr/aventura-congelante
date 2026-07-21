@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,16 +17,40 @@ export function AdminFrameManager({
   onRefresh: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
-  async function update(item: Frame, values: object) {
+  async function update(item: Frame, values: object, successMessage: string) {
+    setPendingId(item.id);
     const response = await fetch(`/api/admin/frames/${item.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
+    setPendingId(null);
 
-    if (response.ok) onRefresh();
+    if (response.ok) {
+      toast.success(successMessage);
+      onRefresh();
+    }
     else toast.error("Falha ao atualizar moldura.");
+  }
+
+  async function toggle(item: Frame) {
+    if (item.isActive && !window.confirm(`Desativar a moldura “${item.name}”? Ela deixará de aparecer para os convidados.`)) return;
+    await update(item, { isActive: !item.isActive }, item.isActive ? "Moldura desativada." : "Moldura ativada.");
+  }
+
+  async function remove(item: Frame) {
+    if (!window.confirm(`Excluir permanentemente a moldura “${item.name}”? Esta ação não pode ser desfeita.`)) return;
+    setPendingId(item.id);
+    const response = await fetch(`/api/admin/frames/${item.id}`, { method: "DELETE" });
+    setPendingId(null);
+    if (response.ok) {
+      toast.success("Moldura excluída.");
+      onRefresh();
+    } else {
+      toast.error((await response.json()).error || "Falha ao excluir a moldura.");
+    }
   }
 
   async function upload(event: React.FormEvent<HTMLFormElement>) {
@@ -66,28 +90,37 @@ export function AdminFrameManager({
             <div className="col-span-2 flex min-w-0 items-center justify-end gap-2 border-t border-[#d7e6ed] pt-3 sm:col-span-1 sm:border-0 sm:pt-0">
               <button
                 type="button"
-                onClick={() => update(item, { displayOrder: Math.max(0, item.displayOrder - 1) })}
-                disabled={index === 0}
-                className="grid size-10 shrink-0 place-items-center rounded-full border disabled:opacity-40"
+                onClick={() => update(item, { displayOrder: Math.max(0, item.displayOrder - 1) }, "Moldura movida para cima.")}
+                disabled={index === 0 || pendingId === item.id}
+                className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Mover para cima"
               >
                 <ArrowUp className="size-4" />
               </button>
               <button
                 type="button"
-                onClick={() => update(item, { displayOrder: item.displayOrder + 1 })}
-                disabled={index === frames.length - 1}
-                className="grid size-10 shrink-0 place-items-center rounded-full border disabled:opacity-40"
+                onClick={() => update(item, { displayOrder: item.displayOrder + 1 }, "Moldura movida para baixo.")}
+                disabled={index === frames.length - 1 || pendingId === item.id}
+                className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Mover para baixo"
               >
                 <ArrowDown className="size-4" />
               </button>
               <button
                 type="button"
-                onClick={() => update(item, { isActive: !item.isActive })}
-                className="min-h-10 min-w-0 flex-1 rounded-full border px-3 text-sm font-bold sm:flex-none"
+                onClick={() => toggle(item)}
+                disabled={pendingId === item.id}
+                className="min-h-10 min-w-0 flex-1 cursor-pointer rounded-full border px-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               >
                 {item.isActive ? "Desativar" : "Ativar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(item)}
+                disabled={pendingId === item.id}
+                className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#d98682] px-3 text-sm font-bold text-[#9f2d28] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 className="size-4" /> Excluir
               </button>
             </div>
           </article>
