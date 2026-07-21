@@ -33,6 +33,8 @@ export async function GET(request: Request) {
     #controls button:focus,#controls select:focus{outline:3px solid #7dd8ff;background:#fff;color:#07395d}
     #controls option{color:#000;background:#fff}
     #status{position:absolute;right:18px;top:16px;z-index:6;padding:7px 11px;border-radius:15px;background:rgba(0,12,24,.55);font-size:13px;color:#dff5ff}
+    #controls,#status{opacity:1;transition:opacity .35s ease}
+    #controls.ui-hidden,#status.ui-hidden{opacity:0}
   </style>
 </head>
 <body>
@@ -62,6 +64,16 @@ export async function GET(request: Request) {
       var pauseButton=document.getElementById('pause');
       var shuffleButton=document.getElementById('shuffle');
       var intervalSelect=document.getElementById('interval');
+      var controls=document.getElementById('controls');
+      var status=document.getElementById('status');
+      var uiTimer=null;
+
+      function hideUi(){controls.className='ui-hidden';status.className='ui-hidden';}
+      function showUi(){
+        controls.className='';status.className='';
+        if(uiTimer){window.clearTimeout(uiTimer);}
+        uiTimer=window.setTimeout(hideUi,5000);
+      }
 
       function fitPhoto(){
         if(!photo.naturalWidth||!photo.naturalHeight){return;}
@@ -113,9 +125,14 @@ export async function GET(request: Request) {
       intervalSelect.value=String(seconds);
       intervalSelect.onchange=function(){seconds=parseInt(intervalSelect.value,10)||8;restartTimer();};
       document.getElementById('fullscreen').onclick=function(){var root=document.documentElement;var open=root.requestFullscreen||root.webkitRequestFullscreen||root.msRequestFullscreen;if(open){open.call(root);}};
+      document.onmousemove=showUi;
+      document.onkeydown=showUi;
+      document.onclick=showUi;
+      document.onfocusin=showUi;
       if(photos.length){showCurrent();}else{empty.style.display='block';photo.style.display='none';backdrop.style.display='none';}
       restartTimer();
       window.setInterval(refresh,12000);
+      showUi();
     }());
   </script>
 </body>
